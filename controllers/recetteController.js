@@ -118,7 +118,8 @@ exports.AddToFavori = async (req, res) => {
         });
 
         if (existingFavori) {
-            return res.status(400).json({ error: "La recette est déjà dans les favoris de l'utilisateur" });
+            await existingFavori.destroy();
+            return res.status(200).json({ message: "Recette retirée des favoris avec succès" });
         }
 
         // Ajoute la recette aux favoris de l'utilisateur
@@ -127,11 +128,9 @@ exports.AddToFavori = async (req, res) => {
             id_recette: recette_id
         });
 
-
         return res.status(200).json({ message: "Recette ajoutée aux favoris avec succès" });
     } catch (error) {
         console.error("Erreur lors de l'ajout de la recette aux favoris :", error);
         return res.status(500).json({ error: "Erreur lors de l'ajout de la recette aux favoris" });
     }
 };
-
