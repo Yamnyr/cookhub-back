@@ -1,4 +1,5 @@
 const Recette = require('../models/recetteModel')
+const Favoris = require("../models/favorisModel");
 
 const db = require('../database/database');
 
@@ -99,6 +100,38 @@ exports.DeleteRecette = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Erreur lors de la suppression de la recette" });
+    }
+};
+
+// (POST) Ajouter une recette aux favoris
+// http://localhost:8000/recette/:id/favori
+exports.AddToFavori = async (req, res) => {
+    const { utilisateur_id, recette_id } = req.body;
+
+    try {
+        // Vérifie si l'utilisateur a déjà ajouté cette recette à ses favoris
+        const existingFavori = await Favoris.findOne({
+            where: {
+                id_utilisateur: utilisateur_id,
+                id_recette: recette_id
+            }
+        });
+
+        if (existingFavori) {
+            return res.status(400).json({ error: "La recette est déjà dans les favoris de l'utilisateur" });
+        }
+
+        // Ajoute la recette aux favoris de l'utilisateur
+        await Favoris.create({
+            id_utilisateur: utilisateur_id,
+            id_recette: recette_id
+        });
+
+
+        return res.status(200).json({ message: "Recette ajoutée aux favoris avec succès" });
+    } catch (error) {
+        console.error("Erreur lors de l'ajout de la recette aux favoris :", error);
+        return res.status(500).json({ error: "Erreur lors de l'ajout de la recette aux favoris" });
     }
 };
 

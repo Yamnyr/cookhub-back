@@ -9,7 +9,7 @@ route.post('/add', recetteController.AddRecette);//TODO: ajout de l'utilisateur 
 route.get('/:id/commentaires', recetteController.GetCommentaires);
 route.put('/:id/edit', recetteController.EditRecette);
 route.delete('/:id/delete', recetteController.DeleteRecette);
-// route.post('/:id/ajouterfavori', recetteController.AddFavori);
+route.post('/:id/favori', recetteController.AddToFavori);
 // route.delete('/:id/supprimerfavori', recetteController.DeleteFavori);
 // route.post('/:id/commenter', recetteController.AddCommentaire);
 

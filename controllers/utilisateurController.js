@@ -5,10 +5,10 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config();
 
 // (POST)
-// http://localhost:8000/utilisateur/add
+// http://localhost:8000/utilisateur/register
 // {
-//     "nom": "waroquet",
-//     "prenom":"quentin",
+//     "nom": "test",
+//     "prenom": "test",
 //     "email": "test@user.gmail",
 //     "mdp": "test"
 // }
