@@ -13,11 +13,15 @@ route.post('/searchbyingredients', recetteController.RecetteByIngredients);
 route.post('/add', middleware.authenticator, recetteController.AddRecette);//TODO: ajout de l'utilisateur connecté
 route.put('/:id/edit', middleware.authenticator, recetteController.EditRecette);
 route.delete('/:id/delete', middleware.authenticator, recetteController.DeleteRecette);
-route.post('/:id/favori', middleware.authenticator, recetteController.AddToFavori);
+route.get('/:id/favori', middleware.authenticator, recetteController.AddToFavori);
+route.get('/favoris', middleware.authenticator, recetteController.RecetteInFavoris);
+
+route.get('/follow', middleware.authenticator, recetteController.RecettesFollow);
+
+//recetten favoris
 
 
-// route.post('/:id/commenter', recetteController.AddCommentaire);
-// route.get('/:utilisateur/suivis/recettes', recetteController.RecettesUtilisateursSuivis);
-//abonnement
+
+route.post('/:id/commenter', recetteController.AddCommentaire);
 
 module.exports = route

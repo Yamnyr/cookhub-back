@@ -1,5 +1,10 @@
 const Recette = require('../models/recetteModel')
 const Favoris = require("../models/favorisModel");
+const Commentaire = require('../models/commentaireModel');
+const Abonnement = require('../models/abonnementModel');
+require('dotenv').config()
+const jwt = require('jsonwebtoken');
+
 
 const db = require('../database/database');
 const { Op } = require('sequelize');
@@ -13,7 +18,7 @@ exports.AllRecette= async(req, res)=>{
 
 
 // (GET) Afficher une recette spécifique
-// http://localhost:8000/recette/:id
+// http://localhost:8000/recette/getbyid/1
 exports.RecetteById= async(req, res)=>{
     const recette = await Recette.findByPk(parseInt(req.params.id))
     res.status(200).json(recette)
@@ -91,12 +96,26 @@ exports.GetCommentaires= async(req, res)=>{
 //         "parmesan": "50g",
 //         "sauce César": "100ml"
 // },
-//     "id_auteur": 1,
 //     "id_typeplat": 2
+//     "idRegion": 1
 // }
 exports.AddRecette = async (req, res) => {
+    // Récupérer le token JWT du header de la requête
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+    }
+
+    // Décoder le token pour obtenir l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.id;
+
     try {
-        const nouvelleRecette = await Recette.create(req.body);
+        // Créer une nouvelle recette en incluant l'ID de l'auteur
+        const nouvelleRecette = await Recette.create({
+            ...req.body,
+            id_auteur: userId
+        });
         res.status(201).json(nouvelleRecette);
     } catch (error) {
         console.error(error);
@@ -112,22 +131,38 @@ exports.AddRecette = async (req, res) => {
 // {
 //     "nom": "Salade César",
 //     "ingrediants": {
-//     "laitue": "1 tête",
+//         "laitue": "1 tête",
 //         "poulet grillé": "200g",
 //         "croûtons": "1 tasse",
 //         "parmesan": "50g",
 //         "sauce César": "100ml"
 // },
-//     "idAuteur": 1,
-//     "idTypeplat": 2
+//     "idTypeplat": 2,
+//     "idRegion": 1
 // }
 exports.EditRecette = async (req, res) => {
     const { id } = req.params;
     try {
-        const recette = await Recette.findByPk( req.params);
+        const recette = await Recette.findByPk(id);
         if (!recette) {
             return res.status(404).json({ message: "Recette introuvable" });
         }
+
+        // Récupérer le token JWT du header de la requête
+        const token = req.headers.authorization;
+        if (!token) {
+            return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+        }
+
+        // Décoder le token pour obtenir l'ID de l'utilisateur
+        const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+        const userId = decodedToken.id;
+
+        // Vérifier si l'utilisateur est l'auteur de la recette
+        if (recette.id_auteur !== userId) {
+            return res.status(403).json({ message: "Vous n'êtes pas autorisé à modifier cette recette" });
+        }
+
         await recette.update(req.body);
         res.status(200).json(recette);
     } catch (error) {
@@ -141,12 +176,28 @@ exports.EditRecette = async (req, res) => {
 // (DELETE) Supprimer une recette existante
 // http://localhost:8000/recette/:id/delete
 exports.DeleteRecette = async (req, res) => {
+    // Récupérer le token JWT du header de la requête
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+    }
+
+    // Décoder le token pour obtenir l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.id;
+
     const { id } = req.params;
     try {
         const recette = await Recette.findByPk(id);
         if (!recette) {
             return res.status(404).json({ message: "Recette introuvable" });
         }
+
+        // Vérifier si l'utilisateur est l'auteur de la recette
+        if (recette.id_auteur !== userId) {
+            return res.status(403).json({ message: "Vous n'êtes pas autorisé à supprimer cette recette" });
+        }
+
         await recette.destroy();
         res.status(204).end();
     } catch (error) {
@@ -158,8 +209,18 @@ exports.DeleteRecette = async (req, res) => {
 // (POST) Ajouter une recette aux favoris
 // http://localhost:8000/recette/:id/favori
 exports.AddToFavori = async (req, res) => {
+
+    // Récupérer le token JWT du header de la requête
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+    }
+
+    // Décoder le token pour obtenir l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.id;
+
     const recetteId = req.params.id; // Récupère l'ID de la recette à ajouter aux favoris
-    const userId = req.body.utilisateur_id;
 
     try {
         // Vérifie si l'utilisateur a déjà ajouté cette recette à ses favoris
@@ -193,9 +254,7 @@ exports.AddToFavori = async (req, res) => {
 // http://localhost:8000/recette/searchbyingredients
 // {
 //     "ingredients": {
-//     "chicken": "whole",
-//         "herbs": "rosemary",
-//         "garlic": "3 cloves"
+//     "laitue": "1 tête"
 // }
 exports.RecetteByIngredients = async (req, res) => {
     const { ingredients } = req.body;
@@ -219,5 +278,114 @@ exports.RecetteByIngredients = async (req, res) => {
     } catch (error) {
         console.error("Erreur lors de la recherche des recettes par ingrédients :", error);
         res.status(500).json({ error: "Erreur lors de la recherche des recettes par ingrédients" });
+    }
+};
+
+
+// http://localhost:8000/recette/1/commenter
+// {
+//     "contenu": "Ceci est un nouveau commentaire sur la recette.",
+//     "note": 2,
+//     "idUtilisateur": 1
+// }
+exports.AddCommentaire = async (req, res) => {
+    const { id } = req.params; // ID de la recette à commenter
+    const { message, note } = req.body; // Contenu du commentaire
+
+    // Récupérer le token JWT du header de la requête
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+    }
+
+    // Décoder le token pour obtenir l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.id;
+
+    try {
+        // Créer le commentaire
+        const commentaire = await Commentaire.create({
+            message: message,
+            note: note,
+            id_utilisateur: userId,
+            id_recette: id
+        });
+
+        res.status(201).json(commentaire);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de l'ajout du commentaire" });
+    }
+};
+
+
+// http://localhost:8000/recette/follow
+// {
+//     "userId": 2
+// }
+exports.RecettesFollow = async (req, res) => {
+    try {
+
+        // Récupérer le token JWT du header de la requête
+        const token = req.headers.authorization;
+        if (!token) {
+            return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+        }
+
+        // Décoder le token pour obtenir l'ID de l'utilisateur
+        const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+        const userId = decodedToken.id;
+
+
+        // Récupérer les IDs des utilisateurs suivis par l'utilisateur connecté
+        const abonnements = await Abonnement.findAll({
+            where: { id_abonne: userId },
+            attributes: ['id_abonnement']
+        });
+        // Extraire les IDs des utilisateurs suivis
+        const idsUtilisateursSuivis = abonnements.map(abonnement => abonnement.id_abonnement);
+
+        console.error(idsUtilisateursSuivis);
+        // Récupérer les recettes des utilisateurs suivis
+        const recettesSuivies = await Recette.findAll({
+            where: { id_auteur: idsUtilisateursSuivis }
+        });
+
+        console.error(idsUtilisateursSuivis);
+        res.status(200).json(recettesSuivies);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la récupération des recettes suivies" });
+    }
+};
+
+// http://localhost:8000/recette/favoris
+// {
+//     "userId": 2
+// }
+exports.RecetteInFavoris = async (req, res) => {
+    try {
+        // Récupérer le token JWT du header de la requête
+        const token = req.headers.authorization;
+        if (!token) {
+            return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+        }
+
+        // Décoder le token pour obtenir l'ID de l'utilisateur
+        const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+        const userId = decodedToken.id;
+
+
+        console.error(userId)
+        // Récupérer les recettes favorites de l'utilisateur
+        const favoris = await Favoris.findAll({
+            where: { id_utilisateur: userId },
+            include: [{ model: Recette }] // Inclure les détails des recettes favorites
+        });
+
+        res.status(200).json(favoris);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erreur lors de la récupération des recettes favorites de l'utilisateur" });
     }
 };
