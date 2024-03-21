@@ -89,6 +89,7 @@ exports.GetCommentaires= async(req, res)=>{
 
 // {
 //     "nom": "Salade César",
+//     "preparation": "preparation..."
 //     "ingrediants": {
 //     "laitue": "1 tête",
 //         "poulet grillé": "200g",
@@ -130,6 +131,7 @@ exports.AddRecette = async (req, res) => {
 
 // {
 //     "nom": "Salade César",
+//     "preparation": "preparation..."
 //     "ingrediants": {
 //         "laitue": "1 tête",
 //         "poulet grillé": "200g",
@@ -286,7 +288,6 @@ exports.RecetteByIngredients = async (req, res) => {
 // {
 //     "contenu": "Ceci est un nouveau commentaire sur la recette.",
 //     "note": 2,
-//     "idUtilisateur": 1
 // }
 exports.AddCommentaire = async (req, res) => {
     const { id } = req.params; // ID de la recette à commenter
@@ -320,9 +321,6 @@ exports.AddCommentaire = async (req, res) => {
 
 
 // http://localhost:8000/recette/follow
-// {
-//     "userId": 2
-// }
 exports.RecettesFollow = async (req, res) => {
     try {
 
@@ -360,9 +358,7 @@ exports.RecettesFollow = async (req, res) => {
 };
 
 // http://localhost:8000/recette/favoris
-// {
-//     "userId": 2
-// }
+
 exports.RecetteInFavoris = async (req, res) => {
     try {
         // Récupérer le token JWT du header de la requête

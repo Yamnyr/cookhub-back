@@ -16,6 +16,11 @@ const Recette = sequelize.define('recette', {
         unique: false,
         allowNull: true
     },
+    preparation: {
+        type: DataTypes.TEXT,
+        unique: false,
+        allowNull: true
+    },
     ingrediants: {
         type: DataTypes.JSON,
         unique: false,
