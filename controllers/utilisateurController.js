@@ -122,3 +122,11 @@ exports.SuivreUtilisateur = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la tentative de suivi de l'utilisateur" });
     }
 };
+
+
+// (GET) Afficher une recette spécifique
+// http://localhost:8000/utilisateur/getbyid/1
+exports.UtilisateurById= async(req, res)=>{
+    const utilisateur = await Utilisateur.findByPk(parseInt(req.params.id))
+    res.status(200).json(utilisateur)
+}

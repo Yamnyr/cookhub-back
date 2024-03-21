@@ -74,6 +74,31 @@ exports.RecetteByUtilisateur = async (req, res) => {
     }
 };
 
+// (GET) Afficher les recettes d'une région spécifique
+// http://localhost:8000/recette/getmyrecette
+exports.MyRecette = async (req, res) => {
+    // Récupérer le token JWT du header de la requête
+    const token = req.headers.authorization;
+    if (!token) {
+        return res.status(401).json({ message: "Token manquant dans l'en-tête de la requête" });
+    }
+
+    // Décoder le token pour obtenir l'ID de l'utilisateur
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decodedToken.id;
+    try {
+        const recettes = await Recette.findAll({
+            where: {
+                id_auteur: userId
+            }
+        });
+        res.status(200).json(recettes);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des recettes par région :", error);
+        res.status(500).json({ error: "Erreur lors de la récupération des recettes par région" });
+    }
+};
+
 
 
 // (GET)
@@ -89,7 +114,7 @@ exports.GetCommentaires= async(req, res)=>{
 
 // {
 //     "nom": "Salade César",
-//     "preparation": "preparation..."
+//     "preparation": "preparation...",
 //     "ingrediants": {
 //     "laitue": "1 tête",
 //         "poulet grillé": "200g",
@@ -97,7 +122,7 @@ exports.GetCommentaires= async(req, res)=>{
 //         "parmesan": "50g",
 //         "sauce César": "100ml"
 // },
-//     "id_typeplat": 2
+//     "id_typeplat": 2,
 //     "idRegion": 1
 // }
 exports.AddRecette = async (req, res) => {

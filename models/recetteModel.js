@@ -26,6 +26,11 @@ const Recette = sequelize.define('recette', {
         unique: false,
         allowNull: true
     },
+    image: {
+        type: DataTypes.TEXT,
+        unique: false,
+        allowNull: true
+    },
 }, {
     sequelize,
     freezeTableName: true

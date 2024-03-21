@@ -8,6 +8,7 @@ route.get('/getbyid/:id', recetteController.RecetteById);
 route.get('/getbytype/:type', recetteController.RecetteByType);
 route.get('/getbyregion/:region', recetteController.RecetteByRegion);
 route.get('/getbyutilisateur/:utilisateur', recetteController.RecetteByUtilisateur);
+route.get('/getmyrecette/', recetteController.MyRecette);
 route.get('/:id/commentaires', recetteController.GetCommentaires);
 route.post('/searchbyingredients', recetteController.RecetteByIngredients);
 route.post('/add', middleware.authenticator, recetteController.AddRecette);//TODO: ajout de l'utilisateur connecté
