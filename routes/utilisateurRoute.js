@@ -7,4 +7,6 @@ const utilisateurController = require('../controllers/utilisateurController')
 route.post('/login/', utilisateurController.login)
 route.post('/register/', utilisateurController.register)
 
+// route.post('/:utilisateur/suivre', utilisateurController.SuivreUtilisateur);
+
 module.exports = route

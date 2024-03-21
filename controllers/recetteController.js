@@ -2,6 +2,7 @@ const Recette = require('../models/recetteModel')
 const Favoris = require("../models/favorisModel");
 
 const db = require('../database/database');
+const { Op } = require('sequelize');
 
 // (GET)
 // http://localhost:8000/recette/getall
@@ -18,12 +19,63 @@ exports.RecetteById= async(req, res)=>{
     res.status(200).json(recette)
 }
 
+// (GET) Afficher les recettes d'une région spécifique
+// http://localhost:8000/recette/getbytype/:type
+exports.RecetteByType = async (req, res) => {
+    try {
+        const recettes = await Recette.findAll({
+            where: {
+                id_typeplat: req.params.type
+            }
+        });
+        res.status(200).json(recettes);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des recettes par région :", error);
+        res.status(500).json({ error: "Erreur lors de la récupération des recettes par région" });
+    }
+};
+
+
+// (GET) Afficher les recettes d'une région spécifique
+// http://localhost:8000/recette/getbyregion/:region
+exports.RecetteByRegion = async (req, res) => {
+    try {
+        const recettes = await Recette.findAll({
+            where: {
+                id_region: req.params.region
+            }
+        });
+        res.status(200).json(recettes);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des recettes par région :", error);
+        res.status(500).json({ error: "Erreur lors de la récupération des recettes par région" });
+    }
+};
+
+
+// (GET) Afficher les recettes d'une région spécifique
+// http://localhost:8000/recette/getbyutilisateur/:utilisateur
+exports.RecetteByUtilisateur = async (req, res) => {
+    try {
+        const recettes = await Recette.findAll({
+            where: {
+                id_auteur: req.params.utilisateur
+            }
+        });
+        res.status(200).json(recettes);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des recettes par région :", error);
+        res.status(500).json({ error: "Erreur lors de la récupération des recettes par région" });
+    }
+};
+
+
 
 // (GET)
 // http://localhost:8000/recette/2/commentaires
 exports.GetCommentaires= async(req, res)=>{
-    const modele = await Recette.findByPk(parseInt(req.params.id))
-    let commentaires = await modele.getCommentaires()
+    const recette = await Recette.findByPk(parseInt(req.params.id))
+    let commentaires = await recette.getCommentaires()
     res.status(200).json(commentaires)
 }
 
@@ -39,8 +91,8 @@ exports.GetCommentaires= async(req, res)=>{
 //         "parmesan": "50g",
 //         "sauce César": "100ml"
 // },
-//     "idAuteur": 1,
-//     "idTypeplat": 2
+//     "id_auteur": 1,
+//     "id_typeplat": 2
 // }
 exports.AddRecette = async (req, res) => {
     try {
@@ -72,7 +124,7 @@ exports.AddRecette = async (req, res) => {
 exports.EditRecette = async (req, res) => {
     const { id } = req.params;
     try {
-        const recette = await Recette.findByPk(id);
+        const recette = await Recette.findByPk( req.params);
         if (!recette) {
             return res.status(404).json({ message: "Recette introuvable" });
         }
@@ -106,14 +158,15 @@ exports.DeleteRecette = async (req, res) => {
 // (POST) Ajouter une recette aux favoris
 // http://localhost:8000/recette/:id/favori
 exports.AddToFavori = async (req, res) => {
-    const { utilisateur_id, recette_id } = req.body;
+    const recetteId = req.params.id; // Récupère l'ID de la recette à ajouter aux favoris
+    const userId = req.body.utilisateur_id;
 
     try {
         // Vérifie si l'utilisateur a déjà ajouté cette recette à ses favoris
         const existingFavori = await Favoris.findOne({
             where: {
-                id_utilisateur: utilisateur_id,
-                id_recette: recette_id
+                id_utilisateur: userId,
+                id_recette: recetteId
             }
         });
 
@@ -124,13 +177,47 @@ exports.AddToFavori = async (req, res) => {
 
         // Ajoute la recette aux favoris de l'utilisateur
         await Favoris.create({
-            id_utilisateur: utilisateur_id,
-            id_recette: recette_id
+            id_utilisateur: userId,
+            id_recette: recetteId
         });
 
         return res.status(200).json({ message: "Recette ajoutée aux favoris avec succès" });
     } catch (error) {
         console.error("Erreur lors de l'ajout de la recette aux favoris :", error);
         return res.status(500).json({ error: "Erreur lors de l'ajout de la recette aux favoris" });
+    }
+};
+
+
+// (POST) Rechercher des recettes par ingrédients
+// http://localhost:8000/recette/searchbyingredients
+// {
+//     "ingredients": {
+//     "chicken": "whole",
+//         "herbs": "rosemary",
+//         "garlic": "3 cloves"
+// }
+exports.RecetteByIngredients = async (req, res) => {
+    const { ingredients } = req.body;
+    try {
+        // Convertir les ingrédients en un tableau de clés
+        const keys = Object.keys(ingredients);
+
+        // Rechercher les recettes qui contiennent tous les ingrédients spécifiés
+        const recettes = await Recette.findAll({
+            where: {
+                ingrediants: {
+                    [Op.and]: keys.map(key => ({
+                        [key]: {
+                            [Op.like]: `%${ingredients[key]}%`
+                        }
+                    }))
+                }
+            }
+        });
+        res.status(200).json(recettes);
+    } catch (error) {
+        console.error("Erreur lors de la recherche des recettes par ingrédients :", error);
+        res.status(500).json({ error: "Erreur lors de la recherche des recettes par ingrédients" });
     }
 };

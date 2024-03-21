@@ -14,6 +14,11 @@ const Commentaire = sequelize.define('commentaire', {
         type: DataTypes.TEXT,
         unique: false,
         allowNull: true
+    },
+    note:{
+        type: DataTypes.INTEGER,
+        unique: false,
+        allowNull: true
     }
 }, {
     sequelize,
