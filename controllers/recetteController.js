@@ -410,3 +410,7 @@ exports.RecetteInFavoris = async (req, res) => {
         res.status(500).json({ message: "Erreur lors de la récupération des recettes favorites de l'utilisateur" });
     }
 };
+
+exports.checkUser = (req,res) =>{
+    res.status(200).json('ok')
+}

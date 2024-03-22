@@ -16,8 +16,8 @@ route.put('/:id/edit', middleware.authenticator, recetteController.EditRecette);
 route.delete('/:id/delete', middleware.authenticator, recetteController.DeleteRecette);
 route.get('/:id/favori', middleware.authenticator, recetteController.AddToFavori);
 route.get('/favoris', middleware.authenticator, recetteController.RecetteInFavoris);
-
 route.get('/follow', middleware.authenticator, recetteController.RecettesFollow);
+route.get('/checkUser', middleware.authenticator, recetteController.checkUser);
 
 //recetten favoris
 
