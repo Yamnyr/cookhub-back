@@ -1,6 +1,6 @@
 const Sequelize = require(  'sequelize')
 
-const sequelize = new Sequelize('cookhub', 'root', '', {
+const sequelize = new Sequelize('cookhub2', 'root', '', {
     host: 'localhost',
     dialect: 'mariadb'
 })

@@ -9,6 +9,7 @@ const Favoris = require('../models/favorisModel')
 const Recette = require('../models/recetteModel')
 const Typeplat = require('../models/typeplatModel')
 
+//permet de créer la bdd
 exports.createAllTable = async(req, res)=>{
     await sequelize.sync()
     res.status(200).json('toutes les tables sont créer')

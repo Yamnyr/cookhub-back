@@ -329,6 +329,19 @@ exports.AddCommentaire = async (req, res) => {
     const userId = decodedToken.id;
 
     try {
+        // Vérifier si l'utilisateur a déjà posté un commentaire pour cette recette
+        const existingComment = await Commentaire.findOne({
+            where: {
+                id_utilisateur: userId,
+                id_recette: id
+            }
+        });
+
+        // Si un commentaire existe déjà, renvoyer une erreur
+        if (existingComment) {
+            return res.status(400).json({ message: "Vous avez déjà posté un commentaire pour cette recette" });
+        }
+
         // Créer le commentaire
         const commentaire = await Commentaire.create({
             message: message,
